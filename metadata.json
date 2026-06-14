@@ -1,0 +1,8 @@
+{
+  "name": "Remix: Disciply",
+  "description": "An ultra-minimal, highly interactive consistency tracker featuring a tactile heatmap and radar consistency graphs.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
