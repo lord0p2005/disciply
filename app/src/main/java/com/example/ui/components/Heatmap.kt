@@ -20,6 +20,8 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Fill
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -182,6 +184,7 @@ fun HeatmapTile(
     onClick: () -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
+    val haptic = LocalHapticFeedback.current
     var isPressed by remember { mutableStateOf(false) }
     val gridLevel4Color = BentoGridLevel4
 
@@ -255,6 +258,7 @@ fun HeatmapTile(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
                 onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     coroutineScope.launch {
                         isPressed = true
                         delay(80) // Visual quick sink and light up

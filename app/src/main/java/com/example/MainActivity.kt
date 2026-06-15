@@ -160,6 +160,7 @@ fun LogTab(
     onToggleDate: (String) -> Unit
 ) {
     val scrollState = rememberScrollState()
+    val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
 
     Column(
         modifier = Modifier
@@ -204,7 +205,10 @@ fun LogTab(
                         .size(36.dp)
                         .clip(CircleShape)
                         .background(BentoBadgeBg)
-                        .clickable { onToggleDarkTheme() },
+                        .clickable {
+                            haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                            onToggleDarkTheme()
+                        },
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -490,6 +494,7 @@ fun LogTab(
                             .clip(RoundedCornerShape(16.dp))
                             .background(BentoGridLevel4)
                             .clickable {
+                                haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
                                 btnCoroutine.launch {
                                     tapPressed = true
                                     delay(80)
@@ -553,7 +558,10 @@ fun LogTab(
                         modifier = Modifier
                             .clip(RoundedCornerShape(12.dp))
                             .border(1.dp, BentoBorder, RoundedCornerShape(12.dp))
-                            .clickable { onToggleToday() }
+                            .clickable {
+                                haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                                onToggleToday()
+                            }
                             .padding(horizontal = 16.dp, vertical = 6.dp)
                     ) {
                         Text(
@@ -593,6 +601,7 @@ fun StatsTab(
     onToggleDarkTheme: () -> Unit
 ) {
     val scrollState = rememberScrollState()
+    val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
 
     Column(
         modifier = Modifier
@@ -632,7 +641,10 @@ fun StatsTab(
                     .size(36.dp)
                     .clip(CircleShape)
                     .background(BentoBadgeBg)
-                    .clickable { onToggleDarkTheme() },
+                    .clickable {
+                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                        onToggleDarkTheme()
+                    },
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -735,6 +747,7 @@ fun FloatingCapsuleBar(
     activeTab: Int,
     onTabSelected: (Int) -> Unit
 ) {
+    val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
     // Elegant pill container floating above components matching Bento theme
     Box(
         modifier = Modifier
@@ -757,7 +770,10 @@ fun FloatingCapsuleBar(
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null
-                    ) { onTabSelected(0) },
+                    ) {
+                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                        onTabSelected(0)
+                    },
                 contentAlignment = Alignment.Center
             ) {
                 val isSelected = activeTab == 0
@@ -816,7 +832,10 @@ fun FloatingCapsuleBar(
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null
-                    ) { onTabSelected(1) },
+                    ) {
+                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                        onTabSelected(1)
+                    },
                 contentAlignment = Alignment.Center
             ) {
                 val isSelected = activeTab == 1
