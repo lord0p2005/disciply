@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -184,9 +185,13 @@ fun HeatmapTile(
     var isPressed by remember { mutableStateOf(false) }
     val gridLevel4Color = BentoGridLevel4
 
+    // iOS style satisfying scale down on press
     val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.82f else 1.0f,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium),
+        targetValue = if (isPressed) 0.75f else 1.0f,
+        animationSpec = spring(
+            dampingRatio = 0.5f,
+            stiffness = Spring.StiffnessMedium
+        ),
         label = "tileScale"
     )
 
@@ -198,7 +203,7 @@ fun HeatmapTile(
             particleProgress.snapTo(0f)
             particleProgress.animateTo(
                 targetValue = 1f,
-                animationSpec = tween(400, easing = LinearOutSlowInEasing)
+                animationSpec = tween(400, easing = FastOutSlowInEasing)
             )
         } else {
             particleProgress.snapTo(0f)
@@ -206,7 +211,7 @@ fun HeatmapTile(
     }
 
     // Map log status and textures
-    val tileColor = when {
+    val baseTileColor = when {
         isLogged -> {
             // Apply varied grades for historical logs
             val hash = (date.hashCode().let { if (it < 0) -it else it } % 3)
@@ -219,6 +224,15 @@ fun HeatmapTile(
         DateUtils.getTodayString() == date -> BentoGridLevel1 // Vacant today highlighted soft blue
         else -> BentoGridEmpty
     }
+
+    // Lights up eagerly when pressed
+    val targetTileColor = if (isPressed) BentoGridLevel4 else baseTileColor
+
+    val tileColor by animateColorAsState(
+        targetValue = targetTileColor,
+        animationSpec = tween(150, easing = LinearOutSlowInEasing),
+        label = "tileColorAnim"
+    )
 
     val borderColor = when {
         DateUtils.getTodayString() == date -> BentoGridLevel4
@@ -243,8 +257,9 @@ fun HeatmapTile(
                 onClick = {
                     coroutineScope.launch {
                         isPressed = true
-                        delay(75)
+                        delay(80) // Visual quick sink and light up
                         isPressed = false
+                        delay(60) // Let it rise briefly before toggling state
                         onClick()
                     }
                 }
