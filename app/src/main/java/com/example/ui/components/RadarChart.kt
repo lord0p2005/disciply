@@ -1,7 +1,8 @@
 package com.example.ui.components
 
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -44,19 +45,34 @@ fun RadarChart(
     val animStreak = remember { Animatable(0f) }
 
     LaunchedEffect(stats) {
-        animFocus.animateTo(stats.focusScore, animationSpec = tween(durationMillis = 1000))
+        animFocus.animateTo(
+            stats.focusScore,
+            animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow)
+        )
     }
     LaunchedEffect(stats) {
-        animMomentum.animateTo(stats.momentumScore, animationSpec = tween(durationMillis = 1000))
+        animMomentum.animateTo(
+            stats.momentumScore,
+            animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow)
+        )
     }
     LaunchedEffect(stats) {
-        animGrit.animateTo(stats.gritScore, animationSpec = tween(durationMillis = 1000))
+        animGrit.animateTo(
+            stats.gritScore,
+            animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow)
+        )
     }
     LaunchedEffect(stats) {
-        animVolume.animateTo(stats.volumeScore, animationSpec = tween(durationMillis = 1000))
+        animVolume.animateTo(
+            stats.volumeScore,
+            animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow)
+        )
     }
     LaunchedEffect(stats) {
-        animStreak.animateTo(stats.streakScore, animationSpec = tween(durationMillis = 1000))
+        animStreak.animateTo(
+            stats.streakScore,
+            animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow)
+        )
     }
 
     val animatedValues = listOf(

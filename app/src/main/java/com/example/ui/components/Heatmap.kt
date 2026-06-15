@@ -188,15 +188,33 @@ fun HeatmapTile(
     var isPressed by remember { mutableStateOf(false) }
     val gridLevel4Color = BentoGridLevel4
 
+    // Celebration pop scale when a tile is logged
+    val popScale = remember { Animatable(1f) }
+
+    LaunchedEffect(isLogged) {
+        if (isLogged) {
+            popScale.snapTo(0.75f) // Quick shrink representation
+            popScale.animateTo(
+                targetValue = 1f,
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioHighBouncy,
+                    stiffness = Spring.StiffnessMedium
+                )
+            )
+        }
+    }
+
     // iOS style satisfying scale down on press
-    val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.75f else 1.0f,
+    val pressScale by animateFloatAsState(
+        targetValue = if (isPressed) 0.72f else 1.0f,
         animationSpec = spring(
-            dampingRatio = 0.5f,
+            dampingRatio = 0.45f,
             stiffness = Spring.StiffnessMedium
         ),
         label = "tileScale"
     )
+
+    val scale = pressScale * popScale.value
 
     // Dynamic sparks animation when selected
     val particleProgress = remember { Animatable(0f) }
