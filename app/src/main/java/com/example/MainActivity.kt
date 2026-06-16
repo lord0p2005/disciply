@@ -91,6 +91,8 @@ fun MainDashboard(
         logs.any { it.date == todayString && it.isLogged }
     }
 
+    var showAdvancedHub by remember { mutableStateOf(false) }
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = BentoBackground, // Soft lavender background
@@ -100,50 +102,77 @@ fun MainDashboard(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            // Main content with slide animations based on tab state
             AnimatedContent(
-                targetState = activeTab,
+                targetState = showAdvancedHub,
                 transitionSpec = {
-                    if (targetState > initialState) {
-                        (slideInHorizontally(animationSpec = tween(400, easing = EaseInOutCubic)) { it } + fadeIn(tween(400)))
-                            .togetherWith(slideOutHorizontally(animationSpec = tween(400, easing = EaseInOutCubic)) { -it } + fadeOut(tween(400)))
+                    if (targetState) {
+                        (slideInHorizontally(animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMedium)) { it } + fadeIn(tween(300)))
+                            .togetherWith(slideOutHorizontally(animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMedium)) { -it } + fadeOut(tween(300)))
                     } else {
-                        (slideInHorizontally(animationSpec = tween(400, easing = EaseInOutCubic)) { -it } + fadeIn(tween(400)))
-                            .togetherWith(slideOutHorizontally(animationSpec = tween(400, easing = EaseInOutCubic)) { it } + fadeOut(tween(400)))
+                        (slideInHorizontally(animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMedium)) { -it } + fadeIn(tween(300)))
+                            .togetherWith(slideOutHorizontally(animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMedium)) { it } + fadeOut(tween(300)))
                     }
                 },
-                label = "tab_transition",
+                label = "hub_screen_transition",
                 modifier = Modifier.fillMaxSize()
-            ) { targetTab ->
-                when (targetTab) {
-                    0 -> LogTab(
-                        logs = logs,
-                        stats = stats,
-                        isTodayLogged = isTodayLogged,
+            ) { isHubOpen ->
+                if (isHubOpen) {
+                    com.example.ui.components.AdvancedHubScreen(
                         isDark = isDark,
-                        onToggleDarkTheme = onToggleDarkTheme,
-                        onToggleToday = { viewModel.toggleLog(todayString) },
-                        onToggleDate = { date -> viewModel.toggleLog(date) }
+                        onBack = { showAdvancedHub = false }
                     )
-                    1 -> StatsTab(
-                        stats = stats,
-                        isDark = isDark,
-                        onToggleDarkTheme = onToggleDarkTheme
-                    )
-                }
-            }
+                } else {
+                    Box(
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        // Main content with slide animations based on tab state
+                        AnimatedContent(
+                            targetState = activeTab,
+                            transitionSpec = {
+                                if (targetState > initialState) {
+                                    (slideInHorizontally(animationSpec = tween(400, easing = EaseInOutCubic)) { it } + fadeIn(tween(400)))
+                                        .togetherWith(slideOutHorizontally(animationSpec = tween(400, easing = EaseInOutCubic)) { -it } + fadeOut(tween(400)))
+                                } else {
+                                    (slideInHorizontally(animationSpec = tween(400, easing = EaseInOutCubic)) { -it } + fadeIn(tween(400)))
+                                        .togetherWith(slideOutHorizontally(animationSpec = tween(400, easing = EaseInOutCubic)) { it } + fadeOut(tween(400)))
+                                }
+                            },
+                            label = "tab_transition",
+                            modifier = Modifier.fillMaxSize()
+                        ) { targetTab ->
+                            when (targetTab) {
+                                0 -> LogTab(
+                                    logs = logs,
+                                    stats = stats,
+                                    isTodayLogged = isTodayLogged,
+                                    isDark = isDark,
+                                    onToggleDarkTheme = onToggleDarkTheme,
+                                    onToggleToday = { viewModel.toggleLog(todayString) },
+                                    onToggleDate = { date -> viewModel.toggleLog(date) },
+                                    onOpenHub = { showAdvancedHub = true }
+                                )
+                                1 -> StatsTab(
+                                    stats = stats,
+                                    isDark = isDark,
+                                    onToggleDarkTheme = onToggleDarkTheme
+                                )
+                            }
+                        }
 
-            // Custom Floating Navigation Capsule Bar
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 24.dp)
-                    .windowInsetsPadding(WindowInsets.navigationBars) // Comply with edge-to-edge guidelines
-            ) {
-                FloatingCapsuleBar(
-                    activeTab = activeTab,
-                    onTabSelected = { activeTab = it }
-                )
+                        // Custom Floating Navigation Capsule Bar
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .padding(bottom = 24.dp)
+                                .windowInsetsPadding(WindowInsets.navigationBars) // Comply with edge-to-edge guidelines
+                        ) {
+                            FloatingCapsuleBar(
+                                activeTab = activeTab,
+                                onTabSelected = { activeTab = it }
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -157,10 +186,12 @@ fun LogTab(
     isDark: Boolean,
     onToggleDarkTheme: () -> Unit,
     onToggleToday: () -> Unit,
-    onToggleDate: (String) -> Unit
+    onToggleDate: (String) -> Unit,
+    onOpenHub: () -> Unit
 ) {
     val scrollState = rememberScrollState()
     val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
+    val coroutineScope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
@@ -217,13 +248,37 @@ fun LogTab(
                     )
                 }
 
+                var isHubBtnPressed by remember { mutableStateOf(false) }
+                val hubBtnScale by animateFloatAsState(
+                    targetValue = if (isHubBtnPressed) 0.88f else 1f,
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioHighBouncy,
+                        stiffness = Spring.StiffnessMedium
+                    ),
+                    label = "hubBtnScale"
+                )
+
                 // Current Streak badge as in the bento layout "Current Streak capsule"
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     modifier = Modifier
+                        .scale(hubBtnScale)
                         .clip(RoundedCornerShape(16.dp))
                         .background(BentoBadgeBg)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = {
+                                haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                                coroutineScope.launch {
+                                    isHubBtnPressed = true
+                                    delay(90)
+                                    isHubBtnPressed = false
+                                    onOpenHub()
+                                }
+                            }
+                        )
                         .padding(horizontal = 12.dp, vertical = 6.dp)
                 ) {
                 // Pulse status indicator dot
@@ -253,7 +308,7 @@ fun LogTab(
                 }
 
                 Text(
-                    text = "SECURE",
+                    text = "HUB ✨",
                     color = BentoBadgeText,
                     fontSize = 9.sp,
                     fontWeight = FontWeight.ExtraBold,
